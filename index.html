@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Javascript nPrompt form</title>
+		<link rel="stylesheet" href="nprompt.css">
+		<script type="text/javascript" src="nprompt.js"></script>
+		<script type="text/javascript">
+		window.onload = function() {
+			var debugs = document.getElementById("debug");
+
+			nprompt({
+				title: "My prompt",
+				message: "Type something...",
+				input: [{
+					"type": "text",
+					"name": "test1",
+					"placeholder": "Test 1",
+					"required": "true"
+				}, {
+					"type": "textarea",
+					"name": "test2",
+					"placeholder": "Test 2"
+				}, {
+					"type": "radio",
+					"name": "r1",
+					"desc": "Radio test 1"
+				}, {
+					"type": "radio",
+					"name": "r2",
+					"desc": "Radio test 2 ..."
+				}, {
+					"type": "checkbox",
+					"name": "c1",
+					"desc": "Checkbox test 1"
+				}, {
+					"type": "date",
+					"name": "date"
+				}],
+				onSubmit: function(obj) {
+					debugs.innerHTML = "Event submit: prompt<br>";
+					console.log(obj);
+					for (var property in obj) {
+						if (obj.hasOwnProperty(property)) {
+							debugs.innerHTML += property + ": " + obj[property] + "<br>";
+						}
+					}
+				},
+				onCancel: function() {
+					debugs.innerHTML = "Event cancel: prompt";
+				}
+			});
+
+			// Button 1
+			document.getElementById("testPrompt1").addEventListener("click", function() {
+				nprompt({
+					title: "My prompt",
+					message: "Type something...",
+					onSubmit: function(obj) {
+						debugs.innerHTML = "Event submit: prompt 1<br>";
+						console.log(obj);
+						for (var property in obj) {
+							if (obj.hasOwnProperty(property)) {
+								console.log(obj[property]);
+								debugs.innerHTML += property + ": " + obj[property] + "<br>";
+							}
+						}
+					},
+					onCancel: function() {
+						debugs.innerHTML = "Event cancel: prompt 1";
+					}
+				});
+			});
+
+			// Button 2
+			document.getElementById("testPrompt2").addEventListener("click", function() {
+				nprompt({
+					title: "My prompt",
+					message: "Type something...",
+					input: [{
+						"type": "text",
+						"name": "test1",
+						"placeholder": "Test 1",
+						"required": "true"
+					}, {
+						"type": "textarea",
+						"name": "test2",
+						"placeholder": "Test 2"
+					}],
+					onSubmit: function(obj) {
+						debugs.innerHTML = "Event submit: prompt 2<br>";
+						console.log(obj);
+						for (var property in obj) {
+							if (obj.hasOwnProperty(property)) {
+								console.log(obj[property]);
+								debugs.innerHTML += property + ": " + obj[property] + "<br>";
+							}
+						}
+					},
+					onCancel: function() {
+						debugs.innerHTML = "Event cancel: prompt 2";
+					}
+				});
+			});
+		
+			// Button 3
+			document.getElementById("testConfirm1").addEventListener("click", function() {
+				nconfirm({
+					title: "My confirm",
+					message: "Confirm something...",
+					onSubmit: function() {
+						debugs.innerHTML = "Event submit: confirm 1<br>";
+					},
+					onCancel: function() {
+						debugs.innerHTML = "Event cancel: confirm 1";
+					}
+				});
+			});
+			
+			// Button 4
+			document.getElementById("testAlert1").addEventListener("click", function() {
+				nalert({
+					title: "My alert",
+					message: "Alert something...",
+					onSubmit: function() {
+						debugs.innerHTML = "Event submit: alert 1<br>";
+					}
+				});
+			});
+			
+			// Button 6
+			document.getElementById("testAlert2").addEventListener("click", function() {
+				nalert({
+					message: "Alert something...",
+					onSubmit: function() {
+						debugs.innerHTML = "Event submit: alert 2<br>";
+					}
+				});
+			});
+			
+			// Button 7
+			document.getElementById("testAlert3").addEventListener("click", function() {
+				nalert({
+					title: "My alert",
+					message: "Alert something...",
+					background: true,
+					onSubmit: function() {
+						debugs.innerHTML = "Event submit: alert 3<br>";
+					}
+				});
+			});
+
+		};
+		</script>
+	</head>
+	<body>
+		<div id="nav">
+			<button type="button" id="testPrompt1">Prompt 1</button>
+			<button type="button" id="testPrompt2">Prompt 2</button>
+			<button type="button" id="testConfirm1">Confirm 1</button>
+			<button type="button" id="testAlert1">Alert 1</button>
+			<button type="button" id="testAlert2">Alert 2</button>
+			<button type="button" id="testAlert3">Alert 3</button>
+		</div>
+		<div id="debug"></div>
+	</body>
+</html>
