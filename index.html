@@ -9,48 +9,6 @@
 		window.onload = function() {
 			var debugs = document.getElementById("debug");
 
-			nprompt({
-				title: "My prompt",
-				message: "Type something...",
-				input: [{
-					"type": "text",
-					"name": "test1",
-					"placeholder": "Test 1",
-					"required": "true"
-				}, {
-					"type": "textarea",
-					"name": "test2",
-					"placeholder": "Test 2"
-				}, {
-					"type": "radio",
-					"name": "r1",
-					"desc": "Radio test 1"
-				}, {
-					"type": "radio",
-					"name": "r2",
-					"desc": "Radio test 2 ..."
-				}, {
-					"type": "checkbox",
-					"name": "c1",
-					"desc": "Checkbox test 1"
-				}, {
-					"type": "date",
-					"name": "date"
-				}],
-				onSubmit: function(obj) {
-					debugs.innerHTML = "Event submit: prompt<br>";
-					console.log(obj);
-					for (var property in obj) {
-						if (obj.hasOwnProperty(property)) {
-							debugs.innerHTML += property + ": " + obj[property] + "<br>";
-						}
-					}
-				},
-				onCancel: function() {
-					debugs.innerHTML = "Event cancel: prompt";
-				}
-			});
-
 			// Button 1
 			document.getElementById("testPrompt1").addEventListener("click", function() {
 				nprompt({
@@ -86,19 +44,33 @@
 						"type": "textarea",
 						"name": "test2",
 						"placeholder": "Test 2"
+					}, {
+						"type": "radio",
+						"name": "r1",
+						"desc": "Radio test 1"
+					}, {
+						"type": "radio",
+						"name": "r2",
+						"desc": "Radio test 2 ..."
+					}, {
+						"type": "checkbox",
+						"name": "c1",
+						"desc": "Checkbox test 1"
+					}, {
+						"type": "date",
+						"name": "date"
 					}],
 					onSubmit: function(obj) {
-						debugs.innerHTML = "Event submit: prompt 2<br>";
+						debugs.innerHTML = "Event submit: prompt<br>";
 						console.log(obj);
 						for (var property in obj) {
 							if (obj.hasOwnProperty(property)) {
-								console.log(obj[property]);
 								debugs.innerHTML += property + ": " + obj[property] + "<br>";
 							}
 						}
 					},
 					onCancel: function() {
-						debugs.innerHTML = "Event cancel: prompt 2";
+						debugs.innerHTML = "Event cancel: prompt";
 					}
 				});
 			});

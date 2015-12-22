@@ -1,7 +1,7 @@
 /**
 * Serialize form function
 * @form - target id
-* @opt - true/false optional(return URI or JSON object)
+* @opt - true/false optional(return URI string or object)
 * Browser support(tested): IE/9+, Mozilla/5.0 Gecko Firefox/38, Chrome/47
 */
 var serialize = function(form, opt) {
@@ -104,18 +104,17 @@ var serialize = function(form, opt) {
 };
 
 /**
-* extend - Object deepExtend function
-* Browser support(tested): IE/9+, Mozilla/5.0 Gecko Firefox/38, Chrome/47
+* Extend - Object extend function
+* Browser support(tested): Mozilla/5.0 Gecko Firefox/38, Chrome/47
 */
 var extend = function(destination, source, callback) {
 	for (var property in source) {
 		if (source[property] && source[property].constructor &&
-		 source[property].constructor === Object &&
-		 source[property] !== null) {
+		 source[property].constructor === Object) {
 			destination[property] = destination[property] || {};
 			arguments.callee(destination[property], source[property]);
 		} else {
-			destination[property] = source[property];
+			destination[property] = source[property]; // IE fails here
 		}
 	}
 	if (callback !== undefined) {
@@ -232,8 +231,8 @@ var PromptFunc = function(options) {
 
 	// Add Submit/Cancel buttons
 	settings.inputSubmit.forEach(function(value, index, ar) {
-		var inputElem = document.createElement('INPUT');
-		extend(inputElem, ar[index]);
+		var elem = document.createElement('INPUT');
+		inputElem = extend(elem, ar[index]);
 		settings.promptBody.querySelector(".nprompt_inputs").appendChild(inputElem);
 	});
 
@@ -243,16 +242,16 @@ var PromptFunc = function(options) {
 			var type = value.type || "text";
 			switch (type) {
 				case "textarea":
-					var inputElem = document.createElement('TEXTAREA');
-					extend(inputElem, ar[index]);
+					var elem = document.createElement('TEXTAREA');
+					inputElem = extend(elem, ar[index]);
 					inputElem.className = value.className || "nprompt_value";
 					// Insert before submit and cancel button
 					settings.promptBody.querySelector(".nprompt_inputs").insertBefore(inputElem, settings.promptBody.querySelector(".nprompt_inputs").childNodes[settings.promptBody.querySelector(".nprompt_inputs").childNodes.length-2]);
 				break;
 				case "radio":
 				case "checkbox":
-					var inputElem = document.createElement('INPUT');
-					extend(inputElem, ar[index]);
+					var elem = document.createElement('INPUT');
+					inputElem = extend(elem, ar[index]);
 					inputElem.id = value.id || Math.random();
 					inputElem.className = value.className || "nprompt_value";
 					var newElement = document.createElement("P");
@@ -270,8 +269,8 @@ var PromptFunc = function(options) {
 					settings.promptBody.querySelector(".nprompt_inputs").insertBefore(newElement, settings.promptBody.querySelector(".nprompt_inputs").childNodes[settings.promptBody.querySelector(".nprompt_inputs").childNodes.length-2]);
 				break;
 				default:
-					var inputElem = document.createElement('INPUT');
-					extend(inputElem, ar[index]);
+					var elem = document.createElement('INPUT');
+					inputElem = extend(elem, ar[index]);
 					//inputElem.id = value.id || Math.random();
 					inputElem.className = value.className || "nprompt_value";
 					// Insert before submit and cancel button
@@ -328,7 +327,7 @@ var PromptFunc = function(options) {
 };
 
 // New prompt event
-nprompt = function(options) {
+var nprompt = function(options) {
 	var defaults = {
 		"type": "prompt"
 	};
@@ -341,7 +340,7 @@ nprompt = function(options) {
 };
 
 // New confirm event
-nconfirm = function(options) {
+var nconfirm = function(options) {
 	var defaults = {
 		"type": "confirm"
 	};
@@ -354,7 +353,7 @@ nconfirm = function(options) {
 };
 
 // New alert event
-nalert = function(options) {
+var nalert = function(options) {
 	var defaults = {
 		"type": "alert"
 	};
