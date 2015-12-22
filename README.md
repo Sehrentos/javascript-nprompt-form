@@ -41,4 +41,7 @@ Form data is serialized on submit(optional).
 		});
 
 
+### JS Fiddle
+ - [JSFiddle link] (https://jsfiddle.net/Sehrentos/vqjt8g62/)
+
 Happy editing.
