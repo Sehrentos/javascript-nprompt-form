@@ -122,9 +122,10 @@ var extend = function(destination, source) {
 
 /**
  * Custom prompt, confirm, alert
- * @prompt( options )
- * @confirm( options )
- * @alert( options )
+ * @nprompt( options )
+ * @nconfirm( options )
+ * @nalert( options )
+ * Browser support(tested): IE9+, Mozilla/5.0 Gecko Firefox/38, Chrome/47
  */
 var PromptFunc = function(options) {
 	// Default settings
@@ -228,35 +229,41 @@ var PromptFunc = function(options) {
 	settings.promptBody.querySelector(".nprompt_message").querySelector(".message").innerHTML = settings.message;
 
 	// Add Submit/Cancel buttons
-	settings.inputSubmit.forEach(function(value, index, ar) {
+	var i = 0;
+	var array = settings.inputSubmit;
+	while (array[i]) {
 		var elem = document.createElement('INPUT');
-		inputElem = extend(elem, ar[index]);
+		inputElem = extend(elem, array[i]);
 		settings.promptBody.querySelector(".nprompt_inputs").appendChild(inputElem);
-	});
+		i++;
+	}
 
 	// Add inputs
 	if (!settings.type || settings.type === "prompt") {
-		settings.input.forEach(function(value, index, ar) {
-			var type = value.type || "text";
+		var i = 0;
+		var array = settings.input;
+		while (array[i]) {
+			var value = array[i];
+			var type = array[i].type || "text";
 			switch (type) {
 				case "textarea":
 					var elem = document.createElement('TEXTAREA');
-					inputElem = extend(elem, ar[index]);
-					inputElem.className = value.className || "nprompt_value";
+					inputElem = extend(elem, array[i]);
+					inputElem.className = array[i].className || "nprompt_value";
 					// Insert before submit and cancel button
 					settings.promptBody.querySelector(".nprompt_inputs").insertBefore(inputElem, settings.promptBody.querySelector(".nprompt_inputs").childNodes[settings.promptBody.querySelector(".nprompt_inputs").childNodes.length-2]);
 				break;
 				case "radio":
 				case "checkbox":
 					var elem = document.createElement('INPUT');
-					inputElem = extend(elem, ar[index]);
-					inputElem.id = value.id || Math.random();
-					inputElem.className = value.className || "nprompt_value";
+					inputElem = extend(elem, array[i]);
+					inputElem.id = array[i].id || Math.random();
+					inputElem.className = array[i].className || "nprompt_value";
 					var newElement = document.createElement("P");
 					
 					var newItem = document.createElement("LABEL");
 					newItem.htmlFor = inputElem.id;
-					newItem.innerHTML = value.desc || "";
+					newItem.innerHTML = array[i].desc || "";
 					
 					newElement.appendChild(inputElem);
 					newElement.appendChild(newItem);
@@ -268,14 +275,15 @@ var PromptFunc = function(options) {
 				break;
 				default:
 					var elem = document.createElement('INPUT');
-					inputElem = extend(elem, ar[index]);
-					//inputElem.id = value.id || Math.random();
-					inputElem.className = value.className || "nprompt_value";
+					inputElem = extend(elem, array[i]);
+					//inputElem.id = array[i].id || Math.random();
+					inputElem.className = array[i].className || "nprompt_value";
 					// Insert before submit and cancel button
 					settings.promptBody.querySelector(".nprompt_inputs").insertBefore(inputElem, settings.promptBody.querySelector(".nprompt_inputs").childNodes[settings.promptBody.querySelector(".nprompt_inputs").childNodes.length-2]);
 				break;
 			}
-		});
+			i++;
+		}
 	}
 
 	// Hide cancel button
