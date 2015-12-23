@@ -105,20 +105,17 @@ var serialize = function(form, opt) {
 
 /**
 * Extend - Object extend function
-* Browser support(tested): Mozilla/5.0 Gecko Firefox/38, Chrome/47
+* Browser support(tested): IE9+, Mozilla/5.0 Gecko Firefox/38, Chrome/47
 */
-var extend = function(destination, source, callback) {
+var extend = function(destination, source) {
 	for (var property in source) {
 		if (source[property] && source[property].constructor &&
 		 source[property].constructor === Object) {
 			destination[property] = destination[property] || {};
 			arguments.callee(destination[property], source[property]);
 		} else {
-			destination[property] = source[property]; // IE fails here
+			destination[property] = source[property];
 		}
-	}
-	if (callback !== undefined) {
-		callback(destination);
 	}
 	return destination;
 };
