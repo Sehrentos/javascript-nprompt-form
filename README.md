@@ -1,9 +1,11 @@
 javascript-nprompt-form
 ======================
 
-Pure JS, custom style prompt, confirm and alert windows for browsers.
+A custom style prompt, confirm and alert for browsers.
 
-Form data is serialized on submit(optional).
+ - Prompt form is serialized and returned as object on submit.
+ - HTML5, no Javascript libraries.
+ - Browser support(tested): IE9+, Mozilla/5.0 Gecko Firefox/38, Chrome/47
 
 ### Example of use:
 	- (prompt)
