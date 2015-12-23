@@ -162,8 +162,9 @@ var PromptFunc = function(options) {
 	var settings = extend(defaults, options);
 
 	// Append promptBody element settings
-	settings.promptBody.className = "nprompt_background";
-	settings.promptBody.innerHTML = '<div class="nprompt_main">' +
+	settings.promptBody.className = "nprompt_holder";
+	settings.promptBody.innerHTML = '<div class="nprompt_background"></div>' +
+		'<div class="nprompt_main">' +
 		'<div class="nprompt_inner">' +
 		'<div class="nprompt_message">' +
 		'<p class="title"></p>' +
@@ -209,7 +210,7 @@ var PromptFunc = function(options) {
 		//settings.promptBody.removeEventListener("keydown", settings.promptKeydown, false);
 		settings.promptBody.querySelector(".nprompt_inputs").removeEventListener("submit", settings.promptSubmit, false);
 		settings.promptBody.querySelector(".submit_cancel").removeEventListener("click", settings.promptCancel, false);
-		window.removeEventListener("resize", settings.promptResize, false);
+		//window.removeEventListener("resize", settings.promptResize, false);
 		return this;
 	};
 
@@ -295,25 +296,29 @@ var PromptFunc = function(options) {
 	settings.promptBody.querySelector(".submit_cancel").addEventListener("click", settings.promptCancel, false);
 
 	// Resize window event
-	window.addEventListener("resize", settings.promptResize, false);
+	//window.addEventListener("resize", settings.promptResize, false);
 
 	// Append to the body
 	document.body.appendChild(settings.promptBody);
 
 	// Enable/Disable background
 	if (settings.background) {
-		settings.promptBody.classList.remove("disabled");
-		settings.promptBody.classList.add("enabled");
+		//settings.promptBody.classList.remove("disabled");
+		//settings.promptBody.classList.add("enabled");
+		settings.promptBody.querySelector(".nprompt_background").className.replace(" disabled", "");
+		settings.promptBody.querySelector(".nprompt_background").className += " enabled";
 	} else {
-		settings.promptBody.classList.remove("enabled");
-		settings.promptBody.classList.add("disabled");
+		//settings.promptBody.classList.remove("enabled");
+		//settings.promptBody.classList.add("disabled");
+		settings.promptBody.querySelector(".nprompt_background").className.replace(" enabled", "");
+		settings.promptBody.querySelector(".nprompt_background").className += " disabled";
 	}
 
 	// Display
-	settings.promptBody.style.display = "block";
+	settings.promptBody.querySelector(".nprompt_background").style.display = "block";
 
-	// Center
-	settings.promptBody.querySelector(".nprompt_main").style.left = (window.innerWidth / 2 - settings.promptBody.querySelector(".nprompt_main").offsetWidth / 2) + "px";
+	// Center (should be done in CSS)
+	//settings.promptBody.querySelector(".nprompt_main").style.left = (window.innerWidth / 2 - settings.promptBody.querySelector(".nprompt_main").offsetWidth / 2) + "px";
 
 	// Focus
 	if (settings.type === false || settings.type === "prompt") {
