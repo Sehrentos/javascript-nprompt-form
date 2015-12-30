@@ -1,15 +1,17 @@
 /**
-* Serialize form function
+* Serialize form
 * @form - target id
-* @opt - true/false optional(return URI string or object)
+* @options - (optional) false, uri, object, json
 * Browser support(tested): IE/9+, Mozilla/5.0 Gecko Firefox/38, Chrome/47
 */
-var serialize = function(form, opt) {
+var serialize = function(form, options) {
 	if (!form || form.nodeName !== "FORM") {
 		return;
 	}
-	var i, j, q = [], o = {}, s = opt || false;
-	for (i = form.elements.length-1; i >= 0; i = i-1) {
+	this.object = {};
+	var i, j, x, a = [], opt = options || false;
+	for (i = 0; i < form.elements.length; i++) {
+	//for (i = form.elements.length-1; i >= 0; i = i-1) {
 		if (form.elements[i].name === "") {
 			continue
 		}
@@ -36,20 +38,12 @@ var serialize = function(form, opt) {
 					case "search":
 					case "tel":
 					case "url":
-						if (!s) {
-							q.push(form.elements[i].name + "=" + encodeURIComponent(form.elements[i].value));
-						} else {
-							o[form.elements[i].name] = encodeURIComponent(form.elements[i].value);
-						}
+						this.object[form.elements[i].name] = encodeURIComponent(form.elements[i].value);
 					break;
 					case "checkbox":
 					case "radio":
 						if (form.elements[i].checked) {
-							if (!s) {
-								q.push(form.elements[i].name + "=" + encodeURIComponent(form.elements[i].value));
-							} else {
-								o[form.elements[i].name] = encodeURIComponent(form.elements[i].value);
-							}
+							this.object[form.elements[i].name] = encodeURIComponent(form.elements[i].value);
 						}
 					break;
 					case "file":
@@ -57,29 +51,18 @@ var serialize = function(form, opt) {
 				}
 			break;
 			case "TEXTAREA":
-				if (!s) {
-					q.push(form.elements[i].name + "=" + encodeURIComponent(form.elements[i].value));
-				} else {
-					o[form.elements[i].name] = encodeURIComponent(form.elements[i].value);
-				}
+				this.object[form.elements[i].name] = encodeURIComponent(form.elements[i].value);
 			break;
 			case "SELECT":
 				switch (form.elements[i].type) {
 					case "select-one":
-						if (!s) {
-							q.push(form.elements[i].name + "=" + encodeURIComponent(form.elements[i].value));
-						} else {
-							o[form.elements[i].name] = encodeURIComponent(form.elements[i].value);
-						}
+						this.object[form.elements[i].name] = encodeURIComponent(form.elements[i].value);
 					break;
 					case "select-multiple":
-						for (j = form.elements[i].options.length-1; j >= 0; j = j-1) {
+						for (j = 0; j < form.elements[i].options.length; j++) {
+						//for (j = form.elements[i].options.length-1; j >= 0; j = j-1) {
 							if (form.elements[i].options[j].selected) {
-								if (!s) {
-									q.push(form.elements[i].name + "=" + encodeURIComponent(form.elements[i].options[j].value));
-								} else {
-									o[form.elements[i].name] = encodeURIComponent(form.elements[i].options[j].value);
-								}
+								this.object[form.elements[i].name] = encodeURIComponent(form.elements[i].options[j].value);
 							}
 						}
 					break;
@@ -90,17 +73,26 @@ var serialize = function(form, opt) {
 					case "reset":
 					case "submit":
 					case "button":
-						if (!s) {
-							q.push(form.elements[i].name + "=" + encodeURIComponent(form.elements[i].value));
-						} else {
-							o[form.elements[i].name] = encodeURIComponent(form.elements[i].value);
-						}
+						this.object[form.elements[i].name] = encodeURIComponent(form.elements[i].value);
 					break;
 				}
 			break;
 		}
 	}
-	return !s ? q.join("&") : o;
+	for (x in this.object) {
+		a.push(x + "=" + this.object[x]);
+	}
+	this.uri = a.join("&");
+	switch (opt) {
+		case "uri":
+			return this.uri;
+		case "object":
+			return this.object;
+		case "json":
+			return JSON.stringify(this.object);
+		default: break;
+	}
+	return this;
 };
 
 /**
@@ -196,8 +188,8 @@ var PromptFunc = function(options) {
 
 	settings.promptSubmit = function(event) {
 		event.preventDefault();
-		var input_object = serialize(settings.promptBody.querySelector(".nprompt_inputs"), true);
-		settings.onSubmit(input_object);
+		var inputObject = serialize(settings.promptBody.querySelector(".nprompt_inputs"), "object");
+		settings.onSubmit(inputObject);
 		settings.remove(settings.promptBody);
 		return this;
 	};
