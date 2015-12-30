@@ -1,128 +1,29 @@
 /**
-* Serialize form
-* @form - target id
-* @options - (optional) false, uri, object, json
-* Browser support(tested): IE/9+, Mozilla/5.0 Gecko Firefox/38, Chrome/47
-*/
-var serialize = function(form, options) {
-	if (!form || form.nodeName !== "FORM") {
-		return;
-	}
-	this.object = {};
-	var i, j, x, a = [], opt = options || false;
-	for (i = 0; i < form.elements.length; i++) {
-	//for (i = form.elements.length-1; i >= 0; i = i-1) {
-		if (form.elements[i].name === "") {
-			continue
-		}
-		switch (form.elements[i].nodeName) {
-			case "INPUT":
-				switch (form.elements[i].type) {
-					case "text":
-					case "hidden":
-					case "password":
-					case "button":
-					case "reset":
-					case "submit":
-					//HTML5
-					case "number":
-					case "color":
-					case "range":
-					case "date":
-					case "month":
-					case "week":
-					case "time":
-					case "datetime":
-					case "datetime-local":
-					case "email":
-					case "search":
-					case "tel":
-					case "url":
-						this.object[form.elements[i].name] = encodeURIComponent(form.elements[i].value);
-					break;
-					case "checkbox":
-					case "radio":
-						if (form.elements[i].checked) {
-							this.object[form.elements[i].name] = encodeURIComponent(form.elements[i].value);
-						}
-					break;
-					case "file":
-					break;
-				}
-			break;
-			case "TEXTAREA":
-				this.object[form.elements[i].name] = encodeURIComponent(form.elements[i].value);
-			break;
-			case "SELECT":
-				switch (form.elements[i].type) {
-					case "select-one":
-						this.object[form.elements[i].name] = encodeURIComponent(form.elements[i].value);
-					break;
-					case "select-multiple":
-						for (j = 0; j < form.elements[i].options.length; j++) {
-						//for (j = form.elements[i].options.length-1; j >= 0; j = j-1) {
-							if (form.elements[i].options[j].selected) {
-								this.object[form.elements[i].name] = encodeURIComponent(form.elements[i].options[j].value);
-							}
-						}
-					break;
-				}
-			break;
-			case "BUTTON":
-				switch (form.elements[i].type) {
-					case "reset":
-					case "submit":
-					case "button":
-						this.object[form.elements[i].name] = encodeURIComponent(form.elements[i].value);
-					break;
-				}
-			break;
-		}
-	}
-	for (x in this.object) {
-		a.push(x + "=" + this.object[x]);
-	}
-	this.uri = a.join("&");
-	switch (opt) {
-		case "uri":
-			return this.uri;
-		case "object":
-			return this.object;
-		case "json":
-			return JSON.stringify(this.object);
-		default: break;
-	}
-	return this;
-};
-
-/**
-* Extend - Object extend function
-* Browser support(tested): IE9+, Mozilla/5.0 Gecko Firefox/38, Chrome/47
-*/
-var extend = function(destination, source) {
-	for (var property in source) {
-		if (source[property] && source[property].constructor &&
-		 source[property].constructor === Object) {
-			destination[property] = destination[property] || {};
-			arguments.callee(destination[property], source[property]);
-		} else {
-			destination[property] = source[property];
-		}
-	}
-	return destination;
-};
-
-/**
- * Custom prompt, confirm, alert
+ * Pure JS: Custom prompt, confirm, alert
  * @nprompt( options )
  * @nconfirm( options )
  * @nalert( options )
  * Browser support(tested): IE9+, Mozilla/5.0 Gecko Firefox/38, Chrome/47
+  options = {
+ 	title: string,					-optional
+ 	message: string,				-optional
+ 	input: array[object],			-optional(npromt required)
+ 	background: true/false,			-optional
+ 	onSubmit: callback,				-optional
+ 	onCancel: callback				-optional
+ }
+ * input example:
+ options.input = [{
+ 	"type": "text",
+ 	"name": "test1",
+ 	"placeholder": "Test 1",
+ 	"required": "true"
+ }]
  */
-var PromptFunc = function(options) {
+var nprompt = function(options, pType) {
 	// Default settings
 	var defaults = {
-		type: false,
+		type: pType || "prompt",
 		title: "",
 		message: "",
 		input: [{
@@ -144,6 +45,104 @@ var PromptFunc = function(options) {
 		promptBody: document.createElement("DIV"),
 		onSubmit: function() {},
 		onCancel: function() {}
+	};
+
+	/*
+	* Serialize form function
+	* @form - target id
+	* @return object
+	* Browser support(tested): IE/9+, Mozilla/5.0 Gecko Firefox/38, Chrome/47
+	*/
+	var serialize = function(form) {
+		if (!form || form.nodeName !== "FORM") {
+			return;
+		}
+		var i, j, o = {};
+		for (i = 0; i < form.elements.length; i++) {
+			if (form.elements[i].name === "") {
+				continue
+			}
+			switch (form.elements[i].nodeName) {
+				case "INPUT":
+					switch (form.elements[i].type) {
+						case "text":
+						case "hidden":
+						case "password":
+						case "button":
+						case "reset":
+						case "submit":
+						//HTML5
+						case "number":
+						case "color":
+						case "range":
+						case "date":
+						case "month":
+						case "week":
+						case "time":
+						case "datetime":
+						case "datetime-local":
+						case "email":
+						case "search":
+						case "tel":
+						case "url":
+							o[form.elements[i].name] = encodeURIComponent(form.elements[i].value);
+						break;
+						case "checkbox":
+						case "radio":
+							if (form.elements[i].checked) {
+								o[form.elements[i].name] = encodeURIComponent(form.elements[i].value);
+							}
+						break;
+						case "file":
+						break;
+					}
+				break;
+				case "TEXTAREA":
+					o[form.elements[i].name] = encodeURIComponent(form.elements[i].value);
+				break;
+				case "SELECT":
+					switch (form.elements[i].type) {
+						case "select-one":
+							o[form.elements[i].name] = encodeURIComponent(form.elements[i].value);
+						break;
+						case "select-multiple":
+							for (j = 0; j < form.elements[i].options.length; j++) {
+								if (form.elements[i].options[j].selected) {
+									o[form.elements[i].name] = encodeURIComponent(form.elements[i].options[j].value);
+								}
+							}
+						break;
+					}
+				break;
+				case "BUTTON":
+					switch (form.elements[i].type) {
+						case "reset":
+						case "submit":
+						case "button":
+							o[form.elements[i].name] = encodeURIComponent(form.elements[i].value);
+						break;
+					}
+				break;
+			}
+		}
+		return o;
+	};
+
+	/*
+	* Extend - Object merge function
+	* Browser support(tested): IE9+, Mozilla/5.0 Gecko Firefox/38, Chrome/47
+	*/
+	var extend = function(destination, source) {
+		for (var property in source) {
+			if (source[property] && source[property].constructor &&
+			 source[property].constructor === Object) {
+				destination[property] = destination[property] || {};
+				arguments.callee(destination[property], source[property]);
+			} else {
+				destination[property] = source[property];
+			}
+		}
+		return destination;
 	};
 
 	// New 2015 not working in IE yet.
@@ -168,7 +167,7 @@ var PromptFunc = function(options) {
 		return t.parentNode.removeChild(t);
 	};
 
-	settings.promptKeydown = function(event) {
+	/* settings.promptKeydown = function(event) {
 		if (event.target.nodeName.toLowerCase() === "textarea") {
 			if (!event.shiftKey && event.keyCode === 13) {
 				event.preventDefault();
@@ -184,7 +183,7 @@ var PromptFunc = function(options) {
 			event.preventDefault();
 			settings.promptCancel(event);
 		}
-	};
+	}; */
 
 	settings.promptSubmit = function(event) {
 		event.preventDefault();
@@ -204,11 +203,11 @@ var PromptFunc = function(options) {
 		return this;
 	};
 
-	settings.promptResize = function(event) {
+	/* settings.promptResize = function(event) {
 		setTimeout(function() {
 			settings.promptBody.querySelector(".nprompt_main").style.left = (window.innerWidth / 2 - settings.promptBody.querySelector(".nprompt_main").offsetWidth / 2) + "px";
 		}, 200);
-	};
+	}; */
 
 	// Add title
 	if (settings.title.length > 0) {
@@ -327,42 +326,11 @@ var PromptFunc = function(options) {
 
 	return this;
 };
-
-// New prompt event
-var nprompt = function(options) {
-	var defaults = {
-		"type": "prompt"
-	};
-	// New 2015 not working in IE yet.
-	//var settings = Object.assign(defaults, options);
-	// Custom function extend(destination, source)
-	var settings = extend(defaults, options);
-
-	return PromptFunc(settings);
-};
-
 // New confirm event
 var nconfirm = function(options) {
-	var defaults = {
-		"type": "confirm"
-	};
-	// New 2015 not working in IE yet.
-	//var settings = Object.assign(defaults, options);
-	// Custom function extend(destination, source)
-	var settings = extend(defaults, options);
-
-	return PromptFunc(settings);
+	return nprompt(options, "confirm");
 };
-
 // New alert event
 var nalert = function(options) {
-	var defaults = {
-		"type": "alert"
-	};
-	// New 2015 not working in IE yet.
-	//var settings = Object.assign(defaults, options);
-	// Custom function extend(destination, source)
-	var settings = extend(defaults, options);
-
-	return PromptFunc(settings);
+	return nprompt(options, "alert");
 };
