@@ -21,6 +21,13 @@
  }]
  */
 var nprompt = function(options, pType) {
+
+	// DOM ready: "interactive" || "complete"
+	if (document.readyState === "loading") {
+		console.log("DOM is not ready!");
+		return;
+	}
+
 	// Default settings
 	var defaults = {
 		type: pType || "prompt",
@@ -90,7 +97,9 @@ var nprompt = function(options, pType) {
 						case "checkbox":
 						case "radio":
 							if (form.elements[i].checked) {
-								o[form.elements[i].name] = encodeURIComponent(form.elements[i].value);
+								o[form.elements[i].name] = encodeURIComponent(form.elements[i].value); //on
+							} else {
+								o[form.elements[i].name] = encodeURIComponent("off");
 							}
 						break;
 						case "file":
@@ -145,9 +154,41 @@ var nprompt = function(options, pType) {
 		return destination;
 	};
 
-	// New 2015 not working in IE yet.
-	//var settings = Object.assign(defaults, options);
-	// Custom function extend(destination, source)
+	/*
+	* Remove element
+	*/
+	var remove = function(t) {
+		return t.parentNode.removeChild(t);
+	};
+
+	/*
+	* Submit event
+	*/
+	var npromptSubmit = function(event) {
+		event.preventDefault();
+		var inputObject = serialize(settings.promptBody.querySelector(".nprompt_inputs"), "object");
+		settings.onSubmit(inputObject);
+		remove(settings.promptBody);
+		return this;
+	};
+
+	/*
+	* Cancel event
+	*/
+	var npromptCancel = function(event) {
+		settings.onCancel(null);
+		remove(settings.promptBody);
+		settings.promptBody.querySelector(".nprompt_inputs").removeEventListener("submit", npromptSubmit, false);
+		settings.promptBody.querySelector(".submit_cancel").removeEventListener("click", npromptCancel, false);
+		return this;
+	};
+
+	/*
+	* Merge defaults and options into settings object.
+	* New 2015 not working in IE yet.
+	* var settings = Object.assign(defaults, options);
+	* Custom function extend(destination, source)
+	*/
 	var settings = extend(defaults, options);
 
 	// Append promptBody element settings
@@ -163,167 +204,128 @@ var nprompt = function(options, pType) {
 		'</div>' +
 		'</div>';
 
-	settings.remove = function(t) {
-		return t.parentNode.removeChild(t);
-	};
-
-	/* settings.promptKeydown = function(event) {
-		if (event.target.nodeName.toLowerCase() === "textarea") {
-			if (!event.shiftKey && event.keyCode === 13) {
-				event.preventDefault();
-				settings.promptSubmit(event);
-			} else if (event.keyCode == 27) {
-				event.preventDefault();
-				settings.promptCancel(event);
-			}
-		} else if (event.keyCode === 13) {
-			event.preventDefault();
-			settings.promptSubmit(event);
-		} else if (event.keyCode == 27) {
-			event.preventDefault();
-			settings.promptCancel(event);
+	// Update DOM and Display
+	try {
+		// DOM Add title
+		if (settings.title.length > 0) {
+			settings.promptBody.querySelector(".nprompt_message").querySelector(".title").innerHTML = settings.title;
+		} else {
+			remove( settings.promptBody.querySelector(".nprompt_message").querySelector(".title") );
 		}
-	}; */
 
-	settings.promptSubmit = function(event) {
-		event.preventDefault();
-		var inputObject = serialize(settings.promptBody.querySelector(".nprompt_inputs"), "object");
-		settings.onSubmit(inputObject);
-		settings.remove(settings.promptBody);
-		return this;
-	};
+		// DOM Add message
+		settings.promptBody.querySelector(".nprompt_message").querySelector(".message").innerHTML = settings.message;
 
-	settings.promptCancel = function(event) {
-		settings.onCancel(null);
-		settings.remove(settings.promptBody);
-		//settings.promptBody.removeEventListener("keydown", settings.promptKeydown, false);
-		settings.promptBody.querySelector(".nprompt_inputs").removeEventListener("submit", settings.promptSubmit, false);
-		settings.promptBody.querySelector(".submit_cancel").removeEventListener("click", settings.promptCancel, false);
-		//window.removeEventListener("resize", settings.promptResize, false);
-		return this;
-	};
+		// DOM Add Submit and Cancel buttons
+		var i = 0,
+			array = settings.inputSubmit,
+			npromptInputs = settings.promptBody.querySelector(".nprompt_inputs");
 
-	/* settings.promptResize = function(event) {
-		setTimeout(function() {
-			settings.promptBody.querySelector(".nprompt_main").style.left = (window.innerWidth / 2 - settings.promptBody.querySelector(".nprompt_main").offsetWidth / 2) + "px";
-		}, 200);
-	}; */
-
-	// Add title
-	if (settings.title.length > 0) {
-		settings.promptBody.querySelector(".nprompt_message").querySelector(".title").innerHTML = settings.title;
-	} else {
-		settings.remove( settings.promptBody.querySelector(".nprompt_message").querySelector(".title") );
-	}
-
-	// Add message
-	settings.promptBody.querySelector(".nprompt_message").querySelector(".message").innerHTML = settings.message;
-
-	// Add Submit/Cancel buttons
-	var i = 0;
-	var array = settings.inputSubmit;
-	while (array[i]) {
-		var elem = document.createElement('INPUT');
-		inputElem = extend(elem, array[i]);
-		settings.promptBody.querySelector(".nprompt_inputs").appendChild(inputElem);
-		i++;
-	}
-
-	// Add inputs
-	if (!settings.type || settings.type === "prompt") {
-		var i = 0;
-		var array = settings.input;
 		while (array[i]) {
-			var value = array[i];
-			var type = array[i].type || "text";
-			switch (type) {
-				case "textarea":
-					var elem = document.createElement('TEXTAREA');
-					inputElem = extend(elem, array[i]);
-					inputElem.className = array[i].className || "nprompt_value";
-					// Insert before submit and cancel button
-					settings.promptBody.querySelector(".nprompt_inputs").insertBefore(inputElem, settings.promptBody.querySelector(".nprompt_inputs").childNodes[settings.promptBody.querySelector(".nprompt_inputs").childNodes.length-2]);
-				break;
-				case "radio":
-				case "checkbox":
-					var elem = document.createElement('INPUT');
-					inputElem = extend(elem, array[i]);
-					inputElem.id = array[i].id || Math.random();
-					inputElem.className = array[i].className || "nprompt_value";
-					var newElement = document.createElement("P");
-					
-					var newItem = document.createElement("LABEL");
-					newItem.htmlFor = inputElem.id;
-					newItem.innerHTML = array[i].desc || "";
-					
-					newElement.appendChild(inputElem);
-					newElement.appendChild(newItem);
-					
-					var newItem = document.createElement("BR");
-					newElement.appendChild(newItem);
-					// Insert before submit and cancel button
-					settings.promptBody.querySelector(".nprompt_inputs").insertBefore(newElement, settings.promptBody.querySelector(".nprompt_inputs").childNodes[settings.promptBody.querySelector(".nprompt_inputs").childNodes.length-2]);
-				break;
-				default:
-					var elem = document.createElement('INPUT');
-					inputElem = extend(elem, array[i]);
-					//inputElem.id = array[i].id || Math.random();
-					inputElem.className = array[i].className || "nprompt_value";
-					// Insert before submit and cancel button
-					settings.promptBody.querySelector(".nprompt_inputs").insertBefore(inputElem, settings.promptBody.querySelector(".nprompt_inputs").childNodes[settings.promptBody.querySelector(".nprompt_inputs").childNodes.length-2]);
-				break;
-			}
+			var newInput = document.createElement('INPUT');
+			newInput = extend(newInput, array[i]);
+			npromptInputs.appendChild(newInput);
 			i++;
 		}
+
+		// DOM Add inputs
+		if (!settings.type || settings.type === "prompt") {
+			var i = 0,
+				value,
+				type,
+				array = settings.input;
+			
+			while (array[i]) {
+				value = array[i];
+				type = array[i].type || "text";
+				switch (type) {
+					case "textarea":
+						var newInput = document.createElement('TEXTAREA');
+						newInput = extend(newInput, array[i]);
+						newInput.className = array[i].className || "nprompt_value";
+						
+						// Insert before submit and cancel button
+						npromptInputs.insertBefore(newInput, npromptInputs.childNodes[npromptInputs.childNodes.length-2]);
+						break;
+						
+					case "radio":
+					case "checkbox":
+						var newInput = document.createElement('INPUT');
+						newInput = extend(newInput, array[i]);
+						newInput.id = array[i].id || Math.random();
+						newInput.className = array[i].className || "nprompt_value";
+						var newElement = document.createElement("P");
+						
+						var newItem = document.createElement("LABEL");
+						newItem.htmlFor = newInput.id;
+						newItem.innerHTML = array[i].desc || "";
+						
+						newElement.appendChild(newInput);
+						newElement.appendChild(newItem);
+						
+						newItem = document.createElement("BR");
+						newElement.appendChild(newItem);
+						
+						// Insert before submit and cancel button
+						npromptInputs.insertBefore(newElement, npromptInputs.childNodes[npromptInputs.childNodes.length-2]);
+						break;
+					
+					default:
+					case "text":
+						var newInput = document.createElement('INPUT');
+						newInput = extend(newInput, array[i]);
+						newInput.className = array[i].className || "nprompt_value";
+						
+						// Insert before submit and cancel button
+						npromptInputs.insertBefore(newInput, npromptInputs.childNodes[npromptInputs.childNodes.length-2]);
+						break;
+				}
+				i++;
+			}
+		}
+
+		// DOM Append to the body
+		document.body.appendChild(settings.promptBody);
+
+		// Bind event submit
+		settings.promptBody.querySelector(".nprompt_inputs").addEventListener("submit", npromptSubmit, false);
+
+		// Bind event click cancel
+		settings.promptBody.querySelector(".submit_cancel").addEventListener("click", npromptCancel, false);
+
+		// Bind event keydown
+		//settings.promptBody.addEventListener("keydown", npromptKeydown, false);
+
+		// CSS Hide cancel button
+		if (settings.type !== "prompt" && settings.type !== "confirm") {
+			settings.promptBody.querySelector(".submit_cancel").style.display = "none";
+		}
+
+		// CSS Enable/Disable background
+		//.classList.remove("enabled");
+		//.classList.add("disabled");
+		if (settings.background) {
+			settings.promptBody.querySelector(".nprompt_background").className.replace(" disabled", "");
+			settings.promptBody.querySelector(".nprompt_background").className += " enabled";
+		} else {
+			settings.promptBody.querySelector(".nprompt_background").className.replace(" enabled", "");
+			settings.promptBody.querySelector(".nprompt_background").className += " disabled";
+		}
+
+		// CSS Display (show prompt)
+		settings.promptBody.querySelector(".nprompt_background").style.display = "block";
+
+		// Event Focus and Select
+		if (settings.type === false || settings.type === "prompt") {
+			settings.promptBody.querySelector(".nprompt_value").focus();
+			settings.promptBody.querySelector(".nprompt_value").select();
+		} else {
+			settings.promptBody.querySelector(".submit_ok").focus();
+		}
 	}
-
-	// Hide cancel button
-	if (settings.type !== "prompt" && settings.type !== "confirm") {
-		settings.promptBody.querySelector(".submit_cancel").style.display = "none";
+	catch(err) {
+		console.log(err);
 	}
-
-	// Bind event click submit
-	settings.promptBody.querySelector(".nprompt_inputs").addEventListener("submit", settings.promptSubmit, false);
-
-	// Bind event keydown
-	//settings.promptBody.addEventListener("keydown", settings.promptKeydown, false);
-
-	// Bind event click cancel
-	settings.promptBody.querySelector(".submit_cancel").addEventListener("click", settings.promptCancel, false);
-
-	// Resize window event
-	//window.addEventListener("resize", settings.promptResize, false);
-
-	// Append to the body
-	document.body.appendChild(settings.promptBody);
-
-	// Enable/Disable background
-	if (settings.background) {
-		//settings.promptBody.classList.remove("disabled");
-		//settings.promptBody.classList.add("enabled");
-		settings.promptBody.querySelector(".nprompt_background").className.replace(" disabled", "");
-		settings.promptBody.querySelector(".nprompt_background").className += " enabled";
-	} else {
-		//settings.promptBody.classList.remove("enabled");
-		//settings.promptBody.classList.add("disabled");
-		settings.promptBody.querySelector(".nprompt_background").className.replace(" enabled", "");
-		settings.promptBody.querySelector(".nprompt_background").className += " disabled";
-	}
-
-	// Display
-	settings.promptBody.querySelector(".nprompt_background").style.display = "block";
-
-	// Center (should be done in CSS)
-	//settings.promptBody.querySelector(".nprompt_main").style.left = (window.innerWidth / 2 - settings.promptBody.querySelector(".nprompt_main").offsetWidth / 2) + "px";
-
-	// Focus
-	if (settings.type === false || settings.type === "prompt") {
-		settings.promptBody.querySelector(".nprompt_value").focus();
-		settings.promptBody.querySelector(".nprompt_value").select();
-	} else {
-		settings.promptBody.querySelector(".submit_ok").focus();
-	}
-
 	return this;
 };
 // New confirm event
