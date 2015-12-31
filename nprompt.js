@@ -20,45 +20,14 @@
  	"required": "true"
  }]
  */
-var nprompt = function(options, pType) {
-
-	// DOM ready: "interactive" || "complete"
-	if (document.readyState === "loading") {
-		console.log("DOM is not ready!");
-		return;
-	}
-
-	// Default settings
-	var defaults = {
-		type: pType || "prompt",
-		title: "",
-		message: "",
-		input: [{
-			name: "a",
-			value: "",
-			placeholder: "Write here...",
-			className: "nprompt_value"
-		}],
-		inputSubmit: [{
-			type: "submit",
-			className: "submit_ok",
-			value: "Ok"
-		},{
-			type: "button",
-			className: "submit_cancel",
-			value: "Cancel"
-		}],
-		background: false,
-		promptBody: document.createElement("DIV"),
-		onSubmit: function() {},
-		onCancel: function() {}
-	};
+var nprompt = function(options, promptType) {
+	
+	var settings = {};
 
 	/*
 	* Serialize form function
 	* @form - target id
 	* @return object
-	* Browser support(tested): IE/9+, Mozilla/5.0 Gecko Firefox/38, Chrome/47
 	*/
 	var serialize = function(form) {
 		if (!form || form.nodeName !== "FORM") {
@@ -139,7 +108,8 @@ var nprompt = function(options, pType) {
 
 	/*
 	* Extend - Object merge function
-	* Browser support(tested): IE9+, Mozilla/5.0 Gecko Firefox/38, Chrome/47
+	* @require destination and source object
+	* @return object
 	*/
 	var extend = function(destination, source) {
 		for (var property in source) {
@@ -166,7 +136,7 @@ var nprompt = function(options, pType) {
 	*/
 	var npromptSubmit = function(event) {
 		event.preventDefault();
-		var inputObject = serialize(settings.promptBody.querySelector(".nprompt_inputs"), "object");
+		var inputObject = serialize(settings.promptBody.querySelector(".nprompt_inputs"));
 		settings.onSubmit(inputObject);
 		remove(settings.promptBody);
 		return this;
@@ -183,29 +153,56 @@ var nprompt = function(options, pType) {
 		return this;
 	};
 
-	/*
-	* Merge defaults and options into settings object.
-	* New 2015 not working in IE yet.
-	* var settings = Object.assign(defaults, options);
-	* Custom function extend(destination, source)
-	*/
-	var settings = extend(defaults, options);
-
-	// Append promptBody element settings
-	settings.promptBody.className = "nprompt_holder";
-	settings.promptBody.innerHTML = '<div class="nprompt_background"></div>' +
-		'<div class="nprompt_main">' +
-		'<div class="nprompt_inner">' +
-		'<div class="nprompt_message">' +
-		'<p class="title"></p>' +
-		'<p class="message"><p>' +
-		'</div>' +
-		'<form class="nprompt_inputs"></form>' +
-		'</div>' +
-		'</div>';
-
 	// Update DOM and Display
 	try {
+
+		// Default settings
+		settings = {
+			type: promptType || "prompt",
+			title: "",
+			message: "",
+			input: [{
+				name: "a",
+				value: "",
+				placeholder: "Write here...",
+				className: "nprompt_value"
+			}],
+			inputSubmit: [{
+				type: "submit",
+				className: "submit_ok",
+				value: "Ok"
+			},{
+				type: "button",
+				className: "submit_cancel",
+				value: "Cancel"
+			}],
+			background: false,
+			promptBody: document.createElement("DIV"),
+			onSubmit: function() {},
+			onCancel: function() {}
+		};
+
+		/*
+		* Merge settings and options object.
+		* New 2015 not working in IE yet.
+		* var settings = Object.assign(settings, options);
+		* Use custom function: extend(destination, source)
+		*/
+		settings = extend(settings, options);
+
+		// Append promptBody element settings
+		settings.promptBody.className = "nprompt_holder";
+		settings.promptBody.innerHTML = '<div class="nprompt_background"></div>' +
+			'<div class="nprompt_main">' +
+			'<div class="nprompt_inner">' +
+			'<div class="nprompt_message">' +
+			'<p class="title"></p>' +
+			'<p class="message"><p>' +
+			'</div>' +
+			'<form class="nprompt_inputs"></form>' +
+			'</div>' +
+			'</div>';
+
 		// DOM Add title
 		if (settings.title.length > 0) {
 			settings.promptBody.querySelector(".nprompt_message").querySelector(".title").innerHTML = settings.title;
@@ -219,10 +216,11 @@ var nprompt = function(options, pType) {
 		// DOM Add Submit and Cancel buttons
 		var i = 0,
 			array = settings.inputSubmit,
+			newInput,
 			npromptInputs = settings.promptBody.querySelector(".nprompt_inputs");
 
 		while (array[i]) {
-			var newInput = document.createElement('INPUT');
+			newInput = document.createElement('INPUT');
 			newInput = extend(newInput, array[i]);
 			npromptInputs.appendChild(newInput);
 			i++;
@@ -233,6 +231,9 @@ var nprompt = function(options, pType) {
 			var i = 0,
 				value,
 				type,
+				newInput,
+				newItem,
+				newElement,
 				array = settings.input;
 			
 			while (array[i]) {
@@ -240,7 +241,7 @@ var nprompt = function(options, pType) {
 				type = array[i].type || "text";
 				switch (type) {
 					case "textarea":
-						var newInput = document.createElement('TEXTAREA');
+						newInput = document.createElement('TEXTAREA');
 						newInput = extend(newInput, array[i]);
 						newInput.className = array[i].className || "nprompt_value";
 						
@@ -250,13 +251,13 @@ var nprompt = function(options, pType) {
 						
 					case "radio":
 					case "checkbox":
-						var newInput = document.createElement('INPUT');
+						newInput = document.createElement('INPUT');
 						newInput = extend(newInput, array[i]);
 						newInput.id = array[i].id || Math.random();
 						newInput.className = array[i].className || "nprompt_value";
-						var newElement = document.createElement("P");
+						newElement = document.createElement("P");
 						
-						var newItem = document.createElement("LABEL");
+						newItem = document.createElement("LABEL");
 						newItem.htmlFor = newInput.id;
 						newItem.innerHTML = array[i].desc || "";
 						
@@ -272,7 +273,7 @@ var nprompt = function(options, pType) {
 					
 					default:
 					case "text":
-						var newInput = document.createElement('INPUT');
+						newInput = document.createElement('INPUT');
 						newInput = extend(newInput, array[i]);
 						newInput.className = array[i].className || "nprompt_value";
 						
