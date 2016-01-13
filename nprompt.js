@@ -61,14 +61,14 @@ var nprompt = function(options, promptType) {
 						case "search":
 						case "tel":
 						case "url":
-							o[form.elements[i].name] = encodeURIComponent(form.elements[i].value);
+							o[form.elements[i].name] = form.elements[i].value;
 						break;
 						case "checkbox":
 						case "radio":
 							if (form.elements[i].checked) {
-								o[form.elements[i].name] = encodeURIComponent(form.elements[i].value); //on
+								o[form.elements[i].name] = form.elements[i].value; //on
 							} else {
-								o[form.elements[i].name] = encodeURIComponent("off");
+								o[form.elements[i].name] = "off";
 							}
 						break;
 						case "file":
@@ -76,17 +76,17 @@ var nprompt = function(options, promptType) {
 					}
 				break;
 				case "TEXTAREA":
-					o[form.elements[i].name] = encodeURIComponent(form.elements[i].value);
+					o[form.elements[i].name] = form.elements[i].value;
 				break;
 				case "SELECT":
 					switch (form.elements[i].type) {
 						case "select-one":
-							o[form.elements[i].name] = encodeURIComponent(form.elements[i].value);
+							o[form.elements[i].name] = form.elements[i].value;
 						break;
 						case "select-multiple":
 							for (j = 0; j < form.elements[i].options.length; j++) {
 								if (form.elements[i].options[j].selected) {
-									o[form.elements[i].name] = encodeURIComponent(form.elements[i].options[j].value);
+									o[form.elements[i].name] = form.elements[i].options[j].value;
 								}
 							}
 						break;
@@ -97,7 +97,7 @@ var nprompt = function(options, promptType) {
 						case "reset":
 						case "submit":
 						case "button":
-							o[form.elements[i].name] = encodeURIComponent(form.elements[i].value);
+							o[form.elements[i].name] = form.elements[i].value;
 						break;
 					}
 				break;
@@ -204,14 +204,22 @@ var nprompt = function(options, promptType) {
 			'</div>';
 
 		// DOM Add title
+		var t, target = settings.promptBody.querySelector(".nprompt_message").querySelector(".title");
 		if (settings.title.length > 0) {
-			settings.promptBody.querySelector(".nprompt_message").querySelector(".title").innerHTML = settings.title;
+			t = document.createTextNode(settings.title);
+			target.appendChild(t);
 		} else {
-			remove( settings.promptBody.querySelector(".nprompt_message").querySelector(".title") );
+			remove(target);
 		}
 
 		// DOM Add message
-		settings.promptBody.querySelector(".nprompt_message").querySelector(".message").innerHTML = settings.message;
+		var t, target = settings.promptBody.querySelector(".nprompt_message").querySelector(".message");
+		if (settings.message.length > 0) {
+			t = document.createTextNode(settings.message);
+			target.appendChild(t);
+		} else {
+			remove(target);
+		}
 
 		// DOM Add Submit and Cancel buttons
 		var i = 0,
@@ -289,39 +297,41 @@ var nprompt = function(options, promptType) {
 		document.body.appendChild(settings.promptBody);
 
 		// Bind event submit
-		settings.promptBody.querySelector(".nprompt_inputs").addEventListener("submit", npromptSubmit, false);
+		npromptInputs.addEventListener("submit", npromptSubmit, false);
 
 		// Bind event click cancel
-		settings.promptBody.querySelector(".submit_cancel").addEventListener("click", npromptCancel, false);
+		npromptInputs.querySelector(".submit_cancel").addEventListener("click", npromptCancel, false);
 
 		// Bind event keydown
 		//settings.promptBody.addEventListener("keydown", npromptKeydown, false);
 
 		// CSS Hide cancel button
 		if (settings.type !== "prompt" && settings.type !== "confirm") {
-			settings.promptBody.querySelector(".submit_cancel").style.display = "none";
+			npromptInputs.querySelector(".submit_cancel").style.display = "none";
 		}
 
 		// CSS Enable/Disable background
 		//.classList.remove("enabled");
 		//.classList.add("disabled");
+		var targetBackground = settings.promptBody.querySelector(".nprompt_background");
 		if (settings.background) {
-			settings.promptBody.querySelector(".nprompt_background").className.replace(" disabled", "");
-			settings.promptBody.querySelector(".nprompt_background").className += " enabled";
+			targetBackground.className.replace(" disabled", "");
+			targetBackground.className += " enabled";
 		} else {
-			settings.promptBody.querySelector(".nprompt_background").className.replace(" enabled", "");
-			settings.promptBody.querySelector(".nprompt_background").className += " disabled";
+			targetBackground.className.replace(" enabled", "");
+			targetBackground.className += " disabled";
 		}
 
 		// CSS Display (show prompt)
-		settings.promptBody.querySelector(".nprompt_background").style.display = "block";
+		targetBackground.style.display = "block";
 
 		// Event Focus and Select
 		if (settings.type === false || settings.type === "prompt") {
-			settings.promptBody.querySelector(".nprompt_value").focus();
-			settings.promptBody.querySelector(".nprompt_value").select();
+			var target = settings.promptBody.querySelector(".nprompt_value");
+			target.focus();
+			target.select();
 		} else {
-			settings.promptBody.querySelector(".submit_ok").focus();
+			npromptInputs.querySelector(".submit_ok").focus();
 		}
 	}
 	catch(err) {
